@@ -1,0 +1,13 @@
+#!/bin/ash
+
+build() {
+  add_dir /lroot
+  add_dir /troot
+  add_runscript
+}
+
+help() {
+  cat <<HELPEOF
+This hoook overlays a tmpfs on top of root removing persistent writes to root
+HELPEOF
+}
