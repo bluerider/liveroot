@@ -10,6 +10,6 @@ run_hook() {
      mkdir /troot/upper
      mkdir /troot/work
      mount croot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work /new_root
-     mount_handler=""
+     mount_handler="echo"
  fi;
 }
