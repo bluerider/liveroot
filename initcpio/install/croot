@@ -6,6 +6,7 @@ build() {
   add_binary zramctl
   add_binary mkfs.ext2
   add_binary nproc
+  add_binary free
   add_runscript
 }
 

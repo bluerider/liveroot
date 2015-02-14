@@ -3,6 +3,10 @@
 build() {
   add_dir /lroot
   add_dir /troot
+  add_binary zramctl
+  add_binary mkswap
+  add_binary swapon
+  add_binary free
   add_runscript
 }
 

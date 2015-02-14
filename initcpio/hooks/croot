@@ -3,8 +3,8 @@
 run_hook() {
   if [ "${croot}" ]; then
      $mount_handler /lroot
-     zramctl find 1G lzo $(nproc)
-     zramctl find 1G lzo $(nproc)
+     zramctl find $(free -m | awk '/Mem/ {print $2/2}')M lzo $(nproc)
+     zramctl find $(free -m | awk '/Mem/ {print $2/2}')M lzo $(nproc)
      mkfs.ext2 /dev/zram0
      mount /dev/zram0 /troot
      mkdir /troot/upper

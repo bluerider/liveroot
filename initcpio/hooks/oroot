@@ -7,6 +7,10 @@ run_hook() {
      mkdir /troot/upper
      mkdir /troot/work
      mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work /new_root
+     zramctl find $(free -m | awk '/Mem/ {print $2/2}')M lzo $(nproc)
+     zramctl find $(free -m | awk '/Mem/ {print $2/2}')M lzo $(nproc)
+     mkswap /dev/zram0
+     swapon /dev/zram0
      mount_handler="echo"
  fi;
 }
