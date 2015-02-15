@@ -7,6 +7,8 @@ build() {
   add_binary mkswap
   add_binary swapon
   add_binary free
+  add_binary mkfs.ext2
+  add_binary nproc
   add_runscript
 }
 
