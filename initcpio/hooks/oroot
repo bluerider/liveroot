@@ -4,9 +4,9 @@ run_hook() {
   if [ "${oroot}" ]; then
      $mount_handler /lroot
      modprobe zram num_devices=$(nproc)
-     zramctl find $(free -m | awk '/Mem/ {print $2/2}')M lzo $(nproc)
+     zramctl find $(free -m | awk '/Mem/ {print int($2/2)}')M lzo $(nproc)
      if [ "${oroot}" = "compressed" ]; then
-        zramctl find $(free -m | awk '/Mem/ {print $2/2}')M lzo $(nproc)
+        zramctl find $(free -m | awk '/Mem/ {print int($2/2)}')M lzo $(nproc)
         mkfs.ext2 /dev/zram1
         mount /dev/zram1 /troot
       elif [ "${oroot}" = "raw" ]; then
