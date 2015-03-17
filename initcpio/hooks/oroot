@@ -2,6 +2,9 @@
 
 run_hook() {
   if [ "${oroot}" ]; then
+     echo $root | grep UUID && (
+       rootdev=$(resolve_device "$root") && root=$rootdev
+       unset rootdev)
      $mount_handler /lroot
      modprobe zram num_devices=$(nproc)
      if [ "${quiet}" ]; then
