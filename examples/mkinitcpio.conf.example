@@ -4,7 +4,11 @@
 # run.  Advanced users may wish to specify all system modules
 # in this array.  For instance:
 #     MODULES="piix ide_disk reiserfs"
-MODULES="zram"
+<<<<<<< HEAD
+MODULES="zram ext2 btrfs overlay"
+=======
+MODULES="i915"
+>>>>>>> parent of 592c2b3... Removed i915 from modules array (it isn't necssary). Added zram to modules array so initrd will be built with it.
 
 # BINARIES
 # This setting includes any additional binaries a given user may
