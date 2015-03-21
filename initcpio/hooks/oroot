@@ -12,16 +12,16 @@ run_hook() {
      }
      $mount_handler /lroot
      if [ -z "$(lsmod | grep zram | head -1)" ]; then
-        modprobe zram num_devices=$(nproc)
+        modprobe zram num_devices=$(($(nproc) + 2))
      fi;
      if [ "${quiet}" ]; then
         zramctl find $(free -m | awk '/Mem/ {print int($2/2)}')M lzo $(nproc) &>/dev/null
       else
         zramctl find $(free -m | awk '/Mem/ {print int($2/2)}')M lzo $(nproc)
      fi;
-     if [ "${oroot}" = "compressed" ]; then
+     if [[ "${oroot}" = "compressed" || "${oroot}" = "live" ]]; then
         if [ "${quiet}" ]; then
-           zramctl find $(free -m | awk '/Mem/ {print int($2/2)}')M lzo $(nproc) &>/dev/null
+           zramctl find $(free -m | awk '/Mem/ {print int($2*3/4)}')M lzo $(nproc) &>/dev/null
            mkfs.ext2 /dev/zram1 &>/dev/null
          else
            zramctl find $(free -m | awk '/Mem/ {print int($2/2)}')M lzo $(nproc)
@@ -31,8 +31,6 @@ run_hook() {
       elif [ "${oroot}" = "raw" ]; then
         mount troot -t tmpfs /troot
      fi;
-     mkdir /troot/upper
-     mkdir /troot/work
      if [ "${quiet}" ]; then
         mkswap /dev/zram0 &>/dev/null
         swapon /dev/zram0 &>/devnull
@@ -40,9 +38,20 @@ run_hook() {
         mkswap /dev/zram0
         swapon /dev/zram0
      fi;
-     oroot_mount() {
-       mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "$1"
-     }
+     if [ ! "${oroot}" = "live" ]; then
+        mkdir /troot/upper;
+        mkdir /troot/work;
+        oroot_mount() {
+          mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "$1"
+        }
+      else
+        cp -a /lroot/* /troot/;
+        umount /lroot;
+        umount /troot;
+        oroot_mount() {
+          mount /dev/zram1 "$1"
+        }
+     fi;
      mount_handler=oroot_mount
   fi;
 }
