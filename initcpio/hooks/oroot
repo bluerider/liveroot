@@ -10,9 +10,16 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
+     echo "#!/bin/bash
+       mount \"$root\" /mnt;
+       cd /;
+       rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+       umount /mnt;
+       " > /overlay_flush
+     chmod ug+x /overlay_flush
      $mount_handler /lroot
      if [ -z "$(lsmod | grep zram | head -1)" ]; then
-        modprobe zram num_devices=$(($(nproc) + 2))
+        modprobe zram num_devices=$(($(nproc)+2))
      fi;
      mem_size=$(free -m | awk '/Mem/ {print int($2)}');
      if [ "${quiet}" ]; then
@@ -45,6 +52,7 @@ run_hook() {
         mkdir /troot/work;
         oroot_mount() {
           mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "$1"
+          mv /overlay_flush /new_root/usr/bin/
         }
       else
         cp -a /lroot/* /troot/;
@@ -52,6 +60,7 @@ run_hook() {
         umount /troot;
         oroot_mount() {
           mount /dev/zram1 "$1"
+          mv /overlay_flush /new_root/usr/bin/
         }
      fi;
      mount_handler=oroot_mount
