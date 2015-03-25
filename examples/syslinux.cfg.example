@@ -18,7 +18,7 @@
 # Please review the wiki: https://wiki.archlinux.org/index.php/Syslinux
 # The wiki provides further configuration examples
 
-DEFAULT arch-compressed
+DEFAULT croot
 PROMPT 0        # Set to 1 if you always want to display the boot: prompt 
 TIMEOUT 1
 # You can create syslinux keymaps with the keytab-lilo tool
@@ -48,26 +48,26 @@ MENU COLOR tabmsg       31;40   #30ffffff #00000000 std
 #
 #-*
 
-LABEL arch-true-live
+LABEL lroot
     MENU LABEL Run Arch Linux entirely in ram
     LINUX ../vmlinuz-linux
     APPEND cryptdevice=UUID=00000000-0000-0000-0000-00000000000:pool-locker root=/dev/mapper/pool-locker oroot=live rw quiet vga=current splash rd.udev.log-priority=3
     INITRD  ../intel-ucode.img,../initramfs-linux.img
 
-LABEL arch-compressed
-    MENU LABEL Arch Linux with Compressed Overlay
+LABEL croot
+    MENU LABEL Arch Linux on Compressed Overlay
     LINUX ../vmlinuz-linux
     APPEND cryptdevice=UUID=00000000-0000-0000-0000-00000000000:pool-locker root=/dev/mapper/pool-locker oroot=compressed rw quiet vga=current splash rd.udev.log-priority=3
     INITRD  ../intel-ucode.img,../initramfs-linux.img
 
-LABEL arch-live
-    MENU LABEL Arch Linux with Raw Overlay
+LABEL rroot
+    MENU LABEL Arch Linux on Raw Overlay
     LINUX ../vmlinuz-linux
     APPEND cryptdevice=UUID=00000000-0000-0000-0000-00000000000:pool-locker root=/dev/mapper/pool-locker oroot=raw rw quiet vga=current splash rd.udev.log-priority=3
     INITRD  ../intel-ucode.img,../initramfs-linux.img
     
-LABEL arch
-    MENU LABEL Arch Linux
+LABEL droot
+    MENU LABEL Run Arch Linux on Disk
     LINUX ../vmlinuz-linux
     APPEND cryptdevice=UUID=00000000-0000-0000-0000-00000000000:pool-locker root=/dev/mapper/pool-locker rw quiet vga=current splash rd.udev.log-priority=3
     INITRD  ../intel-ucode.img,../initramfs-linux.img
