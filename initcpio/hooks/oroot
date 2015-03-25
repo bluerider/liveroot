@@ -10,12 +10,6 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
-     echo "#!/bin/bash
-       mount \"$root\" /mnt;
-       cd /;
-       rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
-       umount /mnt;
-       " > /overlay_flush
      chmod ug+x /overlay_flush
      $mount_handler /lroot
      if [ -z "$(lsmod | grep zram | head -1)" ]; then
@@ -23,16 +17,16 @@ run_hook() {
      fi;
      mem_size=$(free -m | awk '/Mem/ {print int($2)}');
      if [ "${quiet}" ]; then
-        zramctl find $(($mem_size/2))M lzo $(nproc) &>/dev/null
+        zramctl -f -s $(($mem_size/2))M -a lzo -t $(nproc) &>/dev/null
       else
-        zramctl find $(($mem_size/2))M lzo $(nproc)
+        zramctl -f -s $(($mem_size/2))M -a lzo -t $(nproc)
      fi;
      if [[ "${oroot}" = "compressed" || "${oroot}" = "live" ]]; then
         if [ "${quiet}" ]; then
-           zramctl find $(($mem_size*2))M lzo $(nproc) &>/dev/null
+           zramctl -f -s $(($mem_size*2))M -a lzo -t $(nproc) &>/dev/null
            mkfs.ext2 /dev/zram1 &>/dev/null
          else
-           zramctl find $(($mem_size*2))M lzo $(nproc)
+           zramctl -f -s $(($mem_size*2))M -a lzo -t $(nproc)
            mkfs.ext2 /dev/zram1
         fi;
         mount /dev/zram1 /troot
