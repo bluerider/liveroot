@@ -10,22 +10,31 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
-     if [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
-        echo "#!/bin/bash
-              cryptsetup open \"$resolved\" \"$cryptname\";
-              mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt;
-              cd /;
-              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
-              umount /mnt;
-              cryptsetup close \"$root\";
-             " > /overlay_flush
+     if [ "${cryptdevice}" ]; then
+        if [ "${oroot}" = "live" ]; then
+           echo "#!/bin/bash
+                 cryptsetup open \"$resolved\" \"$cryptname\";
+                 mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt;
+                 cd /;
+                 rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+                 umount /mnt;
+                 cryptsetup close \"$root\";
+                " > /overlay_flush;
+         else
+           echo "#!/bin/bash
+                mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt;
+                cd /;
+                rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+                umount /mnt;
+                " > /overlay_flush;
+        fi;
        else
         echo "#!/bin/bash
               mount \"$root\" /mnt;
               cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
               umount /mnt;
-            " > /overlay_flush
+            " > /overlay_flush;
      fi;
      chmod ug+x /overlay_flush
      $mount_handler /lroot
