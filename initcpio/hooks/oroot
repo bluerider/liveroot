@@ -13,7 +13,7 @@ run_hook() {
      if [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
         echo "#!/bin/bash
               cryptsetup open \"$resolved\" \"$cryptname\";
-              mount \"$root\" /mnt;
+              mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt;
               cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
               umount /mnt;
