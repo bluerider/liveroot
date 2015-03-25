@@ -10,6 +10,23 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
+     if [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
+        echo "#!/bin/bash
+              cryptsetup open \"$resolved\" \"$cryptname\";
+              mount \"$root\" /mnt;
+              cd /;
+              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+              umount /mnt;
+              cryptsetup close \"$root\";
+             " > /overlay_flush
+       else
+        echo "#!/bin/bash
+              mount \"$root\" /mnt;
+              cd /;
+              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+              umount /mnt;
+            " > /overlay_flush
+     fi;
      chmod ug+x /overlay_flush
      $mount_handler /lroot
      if [ -z "$(lsmod | grep zram | head -1)" ]; then
@@ -55,6 +72,9 @@ run_hook() {
         oroot_mount() {
           mount /dev/zram1 "$1"
           mv /overlay_flush /new_root/usr/bin/
+          if [ "${cryptdevice}" ]; then
+             cryptsetup close "$root";
+          fi;
         }
      fi;
      mount_handler=oroot_mount
