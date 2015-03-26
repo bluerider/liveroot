@@ -37,9 +37,6 @@ run_hook() {
             " > /overlay_flush;
      fi;
      chmod ug+x /overlay_flush
-     until [ -b "$root"  ]; do
-        echo &>/dev/null
-     done;
      poll_device "$root" 20;
      "$mount_handler" /lroot;
      if [ -z "$(lsmod | grep zram | head -1)" ]; then
