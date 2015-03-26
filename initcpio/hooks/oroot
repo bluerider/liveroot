@@ -10,24 +10,22 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
-     if [ "${cryptdevice}" ]; then
-        if [ "${oroot}" = "live" ]; then
-           echo "#!/bin/bash
-                 cryptsetup open \"$resolved\" \"$cryptname\";
-                 mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt;
-                 cd /;
-                 rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
-                 umount /mnt;
-                 cryptsetup close \"$root\";
-                " > /overlay_flush;
-         else
-           echo "#!/bin/bash
-                mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt;
-                cd /;
-                rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
-                umount /mnt;
-                " > /overlay_flush;
-        fi;
+       if [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
+        echo "#!/bin/bash
+              cryptsetup open \"$resolved\" \"$cryptname\";
+              mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt || mount \"$root\" /mnt;
+              cd /;
+              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+              umount /mnt;
+              cryptsetup close \"$root\";
+              " > /overlay_flush;
+       elif [ "${cryptdevice}" ]; then
+        echo "#!/bin/bash
+              mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt || mount \"$root\" /mnt;
+              cd /;
+              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
+              umount /mnt;
+              " > /overlay_flush;
        else
         echo "#!/bin/bash
               mount \"$root\" /mnt;
@@ -57,7 +55,7 @@ run_hook() {
            mkfs.ext2 /dev/zram1
         fi;
         mount /dev/zram1 /troot
-      elif [ "${oroot}" = "raw" ]; then
+      else
         mount troot -t tmpfs -o size=${mem_size}M /troot
      fi;
      unset mem_size;
@@ -68,23 +66,23 @@ run_hook() {
         mkswap /dev/zram0
         swapon /dev/zram0
      fi;
-     if [ ! "${oroot}" = "live" ]; then
-        mkdir /troot/upper;
-        mkdir /troot/work;
-        oroot_mount() {
-          mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "$1"
-          mv /overlay_flush /new_root/usr/bin/
-        }
-      else
+     if [ "${oroot}" = "live" ]; then
         cp -a /lroot/* /troot/;
         umount /lroot;
         umount /troot;
         oroot_mount() {
           mount /dev/zram1 "$1"
           mv /overlay_flush /new_root/usr/bin/
-          if [ "${cryptdevice}" ]; then
-             cryptsetup close "$root";
-          fi;
+          }
+        if [ "${cryptdevice}" ]; then
+           cryptsetup close "$root";
+        fi;
+       else
+        mkdir /troot/upper;
+        mkdir /troot/work;
+        oroot_mount() {
+          mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "$1"
+          mv /overlay_flush /new_root/usr/bin/
         }
      fi;
      mount_handler=oroot_mount
