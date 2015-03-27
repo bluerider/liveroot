@@ -10,10 +10,10 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
-       if [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
+     if [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
         echo "#!/bin/bash
               cryptsetup open \"$resolved\" \"$cryptname\";
-              mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt || mount \"$root\" /mnt;
+              mount -o \$(awk '/$(echo ${root} | sed 's/\//\\\//g')/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt || mount \"$root\" /mnt;
               cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
               umount /mnt;
@@ -21,7 +21,7 @@ run_hook() {
               " > /overlay_flush;
        elif [ "${cryptdevice}" ]; then
         echo "#!/bin/bash
-              mount -o \$(awk '/$cryptname/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt || mount \"$root\" /mnt;
+              mount -o \$(awk '/$(echo ${root} | sed 's/\//\\\//g')/ && !/#/ {print \$4}' /etc/fstab) \"$root\" /mnt || mount \"$root\" /mnt;
               cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /mnt/;
               umount /mnt;
