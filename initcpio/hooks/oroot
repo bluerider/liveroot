@@ -51,7 +51,7 @@ run_hook() {
         umount /lroot;
         umount /troot;
         export oroot_device;
-        export cryptname;
+        export cryptdevice;
         oroot_mount() {
           mount "$oroot_device" "$1"
           mv /overlay_flush /new_root/usr/bin/
