@@ -30,7 +30,7 @@ run_hook() {
      chmod ug+x /overlay_flush
      poll_device "$root" 20;
      "$mount_handler" /lroot;
-     if [ -z "$(lsmod | grep zram | head -1)" ]; then
+     if [ ! -b "/dev/zram0" ]; then
         modprobe zram num_devices=$(($(nproc)+2))
      fi;
      mem_size=$(free -m | awk '/Mem/ {print int($2)}');
