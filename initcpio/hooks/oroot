@@ -52,13 +52,6 @@ run_hook() {
         mount troot -t tmpfs -o size=${mem_size}M /troot
      fi;
      unset mem_size;
-     if [ "${quiet}" ]; then
-        mkswap /dev/zram0 &>/dev/null
-        swapon /dev/zram0 &>/devnull
-      else
-        mkswap /dev/zram0
-        swapon /dev/zram0
-     fi;
      if [ "${oroot}" = "live" ]; then
         cp -a /lroot/* /troot/;
         umount /lroot;
