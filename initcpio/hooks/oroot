@@ -10,10 +10,13 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
+     if [ "$cryptkey" ]; then
+        keydev=$(resolve_device "${cryptkey%%:*}")
+     fi;
      if [[ "${cryptdevice}" && "${oroot}" = "live" && "${cryptkey}" && ! -f "/hooks/lvm2" ]]; then
         echo "#!/bin/bash
               mkdir /run/orootkey;
-              mount \"${cryptkey%%:*}\" /run/orootkey;
+              mount \"$keydev\" /run/orootkey;
               cryptsetup --key-file \"/run/orootkey${cryptkey##*:}\" open \"$resolved\" \"$cryptname\";
               umount /run/orootkey;
               mkdir /run/oroot;
