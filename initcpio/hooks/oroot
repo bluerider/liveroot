@@ -21,8 +21,10 @@ run_hook() {
               umount /run/orootkey;
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
-              rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
+              btrfs subvolume snapshot -r / /oroot-snap;
+              rsync -a --delete /oroot-snap/ /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
               btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
+              btrfs subvolume delete /oroot-snap;
               umount /run/oroot;
               rm -r /run/oroot;
               cryptsetup close \"$root\";
@@ -32,8 +34,10 @@ run_hook() {
               cryptsetup open \"$resolved\" \"$cryptname\";
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
-              rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
+              btrfs subvolume snapshot -r / /oroot-snap;
+              rsync -a --delete /oroot-snap/ /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
               btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
+              btrfs subvolume delete /oroot-snap;
               umount /run/oroot;
               rm -r /run/oroot;
               cryptsetup close \"$root\";
