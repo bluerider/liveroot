@@ -21,12 +21,7 @@ run_hook() {
               umount /run/orootkey;
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
-              btrfs subvolume snapshot -r / /oroot-snap;
-              cd /oroot-snap;
-              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /run/oroot/;
-              btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
-              cd /;
-              btrfs subvolume delete /oroot-snap;
+              rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
               umount /run/oroot;
               rm -r /run/oroot;
               cryptsetup close \"$root\";
@@ -36,12 +31,7 @@ run_hook() {
               cryptsetup open \"$resolved\" \"$cryptname\";
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
-              btrfs subvolume snapshot -r / /oroot-snap;
-              cd /oroot-snap;
-              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /run/oroot/;
-              btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
-              cd /;
-              btrfs subvolume delete /oroot-snap;
+              rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
               umount /run/oroot;
               rm -r /run/oroot;
               cryptsetup close \"$root\";
@@ -51,8 +41,7 @@ run_hook() {
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               cd /;
-              rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /run/oroot/;
-              btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
+              rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev--exclude lib --exclude lib64 --exclude mnt--exclude proc --exclude run --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/ovelay_flush;
               umount /run/oroot;
               rm -r /run/oroot;
               " > /overlay_flush;
