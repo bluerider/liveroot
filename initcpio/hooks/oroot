@@ -50,8 +50,8 @@ run_hook() {
         echo "#!/bin/bash
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
+              cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /run/oroot/;
-              btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
               umount /run/oroot;
               rm -r /run/oroot;
               " > /overlay_flush;
