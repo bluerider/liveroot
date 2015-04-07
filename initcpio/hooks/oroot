@@ -13,7 +13,7 @@ run_hook() {
      if [ "$cryptkey" ]; then
         keydev=$(resolve_device "${cryptkey%%:*}")
      fi;
-     if [[ "${cryptdevice}" && "${oroot}" = "live" && "${cryptkey}" && ! -f "/hooks/lvm2" ]]; then
+     if [[ "${cryptdevice}" && "${oroot}" = "live" && "${cryptkey}" ]]; then
         echo "#!/bin/bash
               mkdir /run/orootkey;
               mount \"$keydev\" /run/orootkey;
@@ -23,17 +23,19 @@ run_hook() {
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /run/oroot/;
+              btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
               umount /run/oroot;
               rm -r /run/oroot;
               cryptsetup close \"$root\";
               " > /overlay_flush;
-       elif [[ "${cryptdevice}" && "${oroot}" = "live" && ! -f "/hooks/lvm2" ]]; then
+       elif [[ "${cryptdevice}" && "${oroot}" = "live" ]]; then
         echo "#!/bin/bash
               cryptsetup open \"$resolved\" \"$cryptname\";
               mkdir /run/oroot;
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               cd /;
               rsync -a --delete --exclude /usr/bin/overlay_flush etc home opt root srv usr var /run/oroot/;
+              btrfs subvolume snapshot -r /run/oroot \"/run/oroot/snapshots/\$(date +%s)\";
               umount /run/oroot;
               rm -r /run/oroot;
               cryptsetup close \"$root\";
@@ -58,9 +60,9 @@ run_hook() {
      if [[ "${oroot}" = "compressed" || "${oroot}" = "live" ]]; then
         oroot_device=$(zramctl -f -s $(($mem_size*2))M -a lzo -t $(nproc))
         if [ "$quiet" ]; then
-           mkfs.ext2 "$oroot_device" &>/dev/null
+           mkfs.btrfs "$oroot_device" &>/dev/null
           else
-           mkfs.ext2 "$oroot_device";
+           mkfs.btrfs "$oroot_device";
         fi;
         mount "$oroot_device" /troot;
       else
@@ -68,13 +70,22 @@ run_hook() {
      fi;
      unset mem_size;
      if [ "${oroot}" = "live" ]; then
-        cp -a /lroot/* /troot/;
+        root_snap=$(ls /lroot/snapshots | sort -nr | head -1);
+        if [ "$quiet" ]; then
+           btrfs send "/lroot/snapshots/$root_snap" 2>/dev/null | btrfs receive /troot/ &>/dev/null;
+           btrfs subvolume snapshot "/troot/$root_snap" "/troot/${root_snap}_root" &>/dev/null;
+
+         else
+           btrfs send "/lroot/snapshots/$root_snap" | btrfs receive /troot/;
+           btrfs subvolume snapshot "/troot/$root_snap" "/troot/${root_snap}_root";
+        fi;
         umount /lroot;
         umount /troot;
         export oroot_device;
         export cryptdevice;
+        export root_snap;
         oroot_mount() {
-          mount "$oroot_device" "$1"
+          mount -o subvol="${root_snap}_root" "$oroot_device" "$1"
           mv /overlay_flush /new_root/usr/bin/
           }
         if [ "${cryptdevice}" ]; then
