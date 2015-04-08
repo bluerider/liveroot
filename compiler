@@ -142,7 +142,7 @@ EOF
 cat <<EOF >> oroot
      case "\$oroot" in
         live|compressed)
-          zdevice=\$(zramctl -f -s \$(awk '/Mem/ {print int(\$2*2)}' <<(free -m))M -a lzo -t \$(nproc))
+          zdevice=\$(zramctl -f -s \$(free -m | awk '/Mem/ {print int(\$2*2)"M"}') -a lzo -t \$(nproc))
           mkfs.ext2 "\$zdevice"
           mount "\$zdevice" /troot
           export zdevice
@@ -188,7 +188,7 @@ cat <<EOF >>oroot
           fi
           ;;
         *)
-          mount troot -t tmpfs -o size=\$(awk '/Mem/ {print int(\$2*2)}' <<(free -m))M /troot
+          mount troot -t tmpfs -o size=\$(free -m | awk '/Mem/ {print int($2)"M"}') /troot
           oroot_mount() {
             mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
             mv /overlay_flush /\$1/usr/bin/
