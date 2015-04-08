@@ -18,8 +18,8 @@ genOverlayFlush() {
       cryptdevice*UUID*)
         crypt_root="${a#cryptdevice=UUID=}"
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot
-         if [ "\$oroot" = "live" ]; then
-            cryptsetup open --uuid="${crypt_root%:*}" "${crypt_root#*:}"
+         if [ \"\$oroot\" = \"live\" ]; then
+            cryptsetup open --uuid=\"${crypt_root%:*}\" \"${crypt_root#*:}\"
          fi
 EOF
         unset crypt_root
@@ -27,20 +27,20 @@ EOF
       cryptdevice)
         crypt_root="${a#cryptdevice=}"
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot
-         if [ "\$oroot" = "live" ]; then
-            cryptsetup open "${crypt_root%:*}" "${crypt_root#*:}"
+         if [ \"\$oroot\" = \"live\" ]; then
+            cryptsetup open \"${crypt_root%:*}\" \"${crypt_root#*:}\"
          fi
 EOF
         unset crypt_root
         ;;
       root*UUID*)
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot
-         mount -U "${a#root=UUID=}" \\
+         mount -U \"${a#root=UUID=}\" \\
 EOF
         ;;
       root*)
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot        
-         mount --source "${a#root=}" \\
+         mount --source \"${a#root=}\" \\
 EOF
         ;;
     esac
@@ -52,7 +52,7 @@ genOverlayFlush $(cat /proc/cmdline)
 
 # rsync code + clean up code for overlay_flush
 cat <<EOF >> /usr/lib/initcpio/hooks/oroot
-           -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) /run/oroot
+           -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
          rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev \\
            --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
           --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
@@ -66,15 +66,15 @@ closeOverlayFlush() {
     case "$a" in
       cryptdevice*UUID*)
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot
-         if [ "\$oroot" = "live" ]; then
-            cryptsetup close "${a#cryptdevice=UUID=*:}"
+         if [ \"\$oroot\" = \"live\" ]; then
+            cryptsetup close \"${a#cryptdevice=UUID=*:}\"
          fi
 EOF
         ;;
       cryptdevice*)
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot
-         if [ "\$oroot" = "live" ]; then
-            cryptsetup close "${a#cryptdevice=*:}"
+         if [ \"\$oroot\" = \"live\" ]; then
+            cryptsetup close \"${a#cryptdevice=*:}\"
          fi
 EOF
         ;;
