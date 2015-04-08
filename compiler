@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # output header for oroot hook + overlay_flush header
-cat <<EOF > /usr/lib/initcpio/hooks/oroot
+cat <<EOF > /oroot
 #!/bin/ash
   if [ "\${oroot}" ]; then
      fsck_root() {
@@ -17,7 +17,7 @@ genOverlayFlush() {
     case "$a" in
       cryptdevice*UUID*)
         crypt_root="${a#cryptdevice=UUID=}"
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
          if [ \"\$oroot\" = \"live\" ]; then
             cryptsetup open --uuid=\"${crypt_root%:*}\" \"${crypt_root#*:}\"
          fi
@@ -26,7 +26,7 @@ EOF
         ;;
       cryptdevice)
         crypt_root="${a#cryptdevice=}"
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
          if [ \"\$oroot\" = \"live\" ]; then
             cryptsetup open \"${crypt_root%:*}\" \"${crypt_root#*:}\"
          fi
@@ -34,12 +34,12 @@ EOF
         unset crypt_root
         ;;
       root*UUID*)
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
          mount -U \"${a#root=UUID=}\" \\
 EOF
         ;;
       root*)
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot        
+        cat <<EOF >> /oroot        
          mount --source \"${a#root=}\" \\
 EOF
         ;;
@@ -51,7 +51,7 @@ EOF
 genOverlayFlush $(cat /proc/cmdline)
 
 # rsync code + clean up code for overlay_flush
-cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+cat <<EOF >> /oroot
            -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
          rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev \\
            --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
@@ -65,14 +65,14 @@ closeOverlayFlush() {
   for a in "$@"; do
     case "$a" in
       cryptdevice*UUID*)
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
          if [ \"\$oroot\" = \"live\" ]; then
             cryptsetup close \"${a#cryptdevice=UUID=*:}\"
          fi
 EOF
         ;;
       cryptdevice*)
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
          if [ \"\$oroot\" = \"live\" ]; then
             cryptsetup close \"${a#cryptdevice=*:}\"
          fi
@@ -86,7 +86,7 @@ EOF
 closeOverlayFlush $(cat /proc/cmdline)
 
 # setuid for overlay_flush and mount root
-cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+cat <<EOF >> /oroot
          " > /overlay_flush
      chmod ug+x /overlay_flush
      poll_device "\$root" 20;
@@ -94,7 +94,7 @@ cat <<EOF >> /usr/lib/initcpio/hooks/oroot
 EOF
 
 # read $oroot and generate ram device
-cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+cat <<EOF >> /oroot
      case "\$oroot" in
         live|compressed)
           zdevice=\$(zramctl -f -s \$(awk '/Mem/ {print int(\$2*2)}' <<(free -m))M -a lzo -t \$(nproc))
@@ -110,12 +110,12 @@ closeDevice() {
   for a in "$@"; do
     case "$a" in
       cryptdevice*UUID*)
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
              cryptsetup close "${a#cryptdevice=UUID=*:}"
 EOF
         ;;
       cryptdevice*)
-        cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+        cat <<EOF >> /oroot
              cryptsetup close "${a#cryptdevice=*:}"
 EOF
         ;;
@@ -126,7 +126,7 @@ EOF
 closeDevice $(cat /proc/cmdline)
 
 # finish setting up ram device
-cat <<EOF >>/usr/lib/initcpio/hooks/oroot
+cat <<EOF >>/oroot
              oroot_mount() {
                mount "\$zdevice" "\$1"
                mv /overlay_flush /\$1/usr/bin/
@@ -150,7 +150,7 @@ cat <<EOF >>/usr/lib/initcpio/hooks/oroot
 EOF
 
 # close oroot hook
-cat <<EOF >> /usr/lib/initcpio/hooks/oroot
+cat <<EOF >> /oroot
      mount_handler=oroot_mount
   fi;
 }
