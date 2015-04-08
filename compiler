@@ -147,6 +147,7 @@ cat <<EOF >> oroot
           export zdevice
           if [ "\$oroot" = "live" ]; then
              cp -a /lroot/* /troot/
+             umount /troot
 EOF
 
 # close device if oroot=live
