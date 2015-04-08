@@ -3,6 +3,7 @@
 # output header for oroot hook + overlay_flush header
 cat <<EOF > oroot
 #!/bin/ash
+run_hook() {
   if [ "\${oroot}" ]; then
      fsck_root() {
        echo &>/dev/null
