@@ -97,7 +97,7 @@ EOF
 # close the device in overlay_flush
 closeOverlayFlush() {
   read b
-  for a in "$@"; do
+  for a in $b; do
     case "$a" in
       cryptkey*)
         cat <<EOF >> oroot
@@ -152,7 +152,7 @@ EOF
 # close device if oroot=live
 closeDevice() {
   read b
-  for a in "$@"; do
+  for a in $b; do
     case "$a" in
       cryptdevice*UUID*)
         cat <<EOF >> oroot
