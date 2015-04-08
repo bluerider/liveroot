@@ -7,6 +7,9 @@ cat <<EOF > oroot
      fsck_root() {
        echo &>/dev/null
      }
+   if [ ! -b "/dev/zram0" ]; then
+      modprobe zram num_devices=\$((\$(nproc)+2))
+   fi
    echo "#!/bin/bash
          mkdir /run/oroot
 EOF
@@ -46,6 +49,7 @@ EOF
         unset cryptkey_root
         ;;
       root*UUID*)
+        # need to newline before fi for cryptsetup to break \
         if [ "$crypt_root" ]; then
         cat <<EOF >> oroot
         
