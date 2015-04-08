@@ -40,6 +40,7 @@ EOF
               --key-file \\\$(mkdir \"/run/oroot-key\"; mount -U \"${cryptkey_root%%:*}\" \"/run/oroot-key\"; echo \"/run/oroot${cryptkey_root##*:}\")
          fi
 EOF
+        unset cryptkey_root
         ;;
       cryptkey*)
         cryptkey_root="${a#cryptkey=}"
