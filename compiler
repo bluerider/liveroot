@@ -40,7 +40,7 @@ EOF
         ;;
       root*)
         cat <<EOF >> /usr/lib/initcpio/hooks/oroot        
-         mount "${a#root=}" \\
+         mount --source "${a#root=}" \\
 EOF
         ;;
     esac
