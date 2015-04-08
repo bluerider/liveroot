@@ -16,6 +16,25 @@ genOverlayFlush() {
   read b
   for a in $b; do
     case "$a" in
+      cryptkey*UUID)
+        cat <<EOF >> oroot
+         if [ \"\$oroot\" = \"live\" ]; then
+            cryptkey_root="${a#cryptkey=UUID=}"
+            mkdir \"/run/oroot-key\"
+            mount -U \"${cryptkey_root%%:*}\" \"/run/oroot-key\"
+         fi
+EOF
+        ## do not release cryptkey_root variable!!!
+        ;;
+      cryptkey*)
+        cat <<EOF >> oroot
+         if [ \"\$oroot\" = \"live\" ]; then
+            mkdir \"/run/oroot-key\"
+            mount -U \"${a%%:*}\" \"/run/oroot-key\"
+         fi
+EOF
+        ## do not release cryptkey_root variable!!!
+        ;;
       cryptdevice*UUID*)
         crypt_root="${a#cryptdevice=UUID=}"
         cat <<EOF >> oroot
@@ -57,7 +76,7 @@ cat <<EOF >> oroot
            -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
          rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev \\
            --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
-          --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
+           --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
          umount /run/oroot;
          rm -r /run/oroot;
 EOF
@@ -67,6 +86,14 @@ closeOverlayFlush() {
   read b
   for a in "$@"; do
     case "$a" in
+      cryptkey*)
+        cat <<EOF >> oroot
+         if [ \"\$oroot\" = \"live\" ]; then
+            umount \"/run/oroot-key\"
+            rm -r \"/run/oroot-key\"
+         fi
+EOF
+        ;;
       cryptdevice*UUID*)
         cat <<EOF >> oroot
          if [ \"\$oroot\" = \"live\" ]; then
