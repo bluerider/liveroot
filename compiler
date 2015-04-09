@@ -136,21 +136,21 @@ cat <<EOF >> oroot
      chmod ug+x /overlay_flush
 EOF
 
-# check to see if root device is up
+# check and mount root device
 checkRootDev() {
   read b
   for a in $b; do
     case "$a" in
       root*UUID*)
         cat <<EOF >> oroot
-     poll_device \"/dev/disk/by-uuid/${a#root=UUID=}\" 20
-     mount -U \"${a#root=UUID=}\" /lroot
+     poll_device "/dev/disk/by-uuid/${a#root=UUID=}" 20
+     mount -U "${a#root=UUID=}" /lroot
 EOF
         ;;
       root*)
         cat <<EOF >> oroot
-     poll_device \"${a#root=}\" 20
-     mount \"${a#root=}\" /lroot
+     poll_device "${a#root=}" 20
+     mount "${a#root=}" /lroot
 EOF
         ;;
     esac
