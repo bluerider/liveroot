@@ -144,11 +144,13 @@ checkRootDev() {
       root*UUID*)
         cat <<EOF >> oroot
      poll_device \"/dev/disk/by-uuid/${a#root=UUID=}\" 20
+     mount -U \"${a#root=UUID=}\" /lroot
 EOF
         ;;
       root*)
         cat <<EOF >> oroot
      poll_device \"${a#root=}\" 20
+     mount \"${a#root=}\" /lroot
 EOF
         ;;
     esac
@@ -157,10 +159,6 @@ EOF
 }
 
 checkRootDev </proc/cmdline
-
-cat <<EOF >> oroot
-     "\$mount_handler" /lroot;
-EOF
 
 # read $oroot and generate ram device
 cat <<EOF >> oroot
