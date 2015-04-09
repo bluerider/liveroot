@@ -93,8 +93,8 @@ EOF
 if [ "$1" = "btrfs" ]; then
    cat <<EOF >> oroot
            if [ \"\$oroot\" = \"live\" ]; then
-              btrfs subvolume snapshot -r / /oroot-snapshot
-              cd /oroot/snap/
+              btrfs subvolume snapshot -r / /oroot-snap
+              cd /oroot-snap
             else
               cd /
            fi
@@ -236,6 +236,7 @@ fi
 # unmount /troot when using oroot=live
 cat <<EOF >> oroot
              umount /troot
+             umount /lroot
 EOF
 
 # close device if oroot=live
