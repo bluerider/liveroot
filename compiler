@@ -188,7 +188,8 @@ cat <<EOF >>oroot
           fi
           ;;
         *)
-          mount troot -t tmpfs -o size=\$(free -m | awk '/Mem/ {print int($2)"M"}') /troot
+          mount troot -t tmpfs -o size=\$(free -m | awk '/Mem/ {print int(\$2)"M"}') /troot
+          mkdir /troot/upper /troot/work
           oroot_mount() {
             mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
             mv /overlay_flush /\$1/usr/bin/
