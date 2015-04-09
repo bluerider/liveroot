@@ -8,11 +8,11 @@ run_hook() {
      fsck_root() {
        echo &>/dev/null
      }
-   if [ ! -b "/dev/zram0" ]; then
-      modprobe zram num_devices=\$((\$(nproc)+2))
-   fi
-   echo "#!/bin/bash
-         mkdir /run/oroot
+     if [ ! -b "/dev/zram0" ]; then
+        modprobe zram num_devices=\$((\$(nproc)+2))
+     fi
+     echo "#!/bin/bash
+           mkdir /run/oroot
 EOF
 
 # generate part of the overlay_flush script
@@ -24,21 +24,21 @@ genOverlayFlush() {
       cryptdevice*UUID*)
         crypt_root="${a#cryptdevice=UUID=}"
         cat <<EOF >> oroot
-         if [ \"\$oroot\" = \"live\" ]; then
-            cryptsetup open --uuid=\"${crypt_root%:*}\" \"${crypt_root#*:}\" \\
+           if [ \"\$oroot\" = \"live\" ]; then
+              cryptsetup open --uuid=\"${crypt_root%:*}\" \"${crypt_root#*:}\" \\
 EOF
         ;;
       cryptdevice)
         crypt_root="${a#cryptdevice=}"
         cat <<EOF >> oroot
-         if [ \"\$oroot\" = \"live\" ]; then
-            cryptsetup open \"${crypt_root%:*}\" \"${crypt_root#*:}\" \\
+           if [ \"\$oroot\" = \"live\" ]; then
+              cryptsetup open \"${crypt_root%:*}\" \"${crypt_root#*:}\" \\
 EOF
         ;;
       cryptkey*UUID)
         cryptkey_root="${a#cryptkey=UUID=}"
         cat <<EOF >> oroot
-              --key-file \\\$(mkdir \"/run/oroot-key\"; mount -U \"${cryptkey_root%%:*}\" \"/run/oroot-key\"; echo \"/run/oroot${cryptkey_root##*:}\")
+                --key-file \\\$(mkdir \"/run/oroot-key\"; mount -U \"${cryptkey_root%%:*}\" \"/run/oroot-key\"; echo \"/run/oroot${cryptkey_root##*:}\")
          fi
 EOF
         unset cryptkey_root
@@ -46,7 +46,7 @@ EOF
       cryptkey*)
         cryptkey_root="${a#cryptkey=}"
         cat <<EOF >> oroot
-              --key-file \\\$(mkdir \"/run/oroot-key\"; mount \"${cryptkey_root%%:*}\" \"/run/oroot-key\"; echo \"/run/oroot${cryptkey_root##*:}\")
+                --key-file \\\$(mkdir \"/run/oroot-key\"; mount \"${cryptkey_root%%:*}\" \"/run/oroot-key\"; echo \"/run/oroot${cryptkey_root##*:}\")
 EOF
         unset cryptkey_root
         ;;
@@ -55,12 +55,12 @@ EOF
         if [ "$crypt_root" ]; then
         cat <<EOF >> oroot
         
-         fi
-         mount -U \"${a#root=UUID=}\" \\
+           fi
+           mount -U \"${a#root=UUID=}\" \\
 EOF
           else
         cat <<EOF >> oroot
-         mount -U \"${a#root=UUID=}\" \\
+           mount -U \"${a#root=UUID=}\" \\
 EOF
         fi
         ;;
@@ -68,12 +68,12 @@ EOF
         if [ "$crypt_root" ]; then
         cat <<EOF >> oroot
         
-         fi
-         mount --source \"${a#root=}\" \\
+           fi
+           mount --source \"${a#root=}\" \\
 EOF
          else
         cat <<EOF >> oroot        
-         mount --source \"${a#root=}\" \\
+           mount --source \"${a#root=}\" \\
 EOF
         fi
         ;;
@@ -87,12 +87,12 @@ genOverlayFlush </proc/cmdline
 
 # rsync code + clean up code for overlay_flush
 cat <<EOF >> oroot
-           -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
-         rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev \\
-           --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
-           --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
-         umount /run/oroot;
-         rm -r /run/oroot;
+             -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
+           rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev \\
+             --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
+             --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
+           umount /run/oroot;
+           rm -r /run/oroot;
 EOF
 
 # close the device in overlay_flush
@@ -102,24 +102,24 @@ closeOverlayFlush() {
     case "$a" in
       cryptkey*)
         cat <<EOF >> oroot
-         if [ \"\$oroot\" = \"live\" ]; then
-            umount \"/run/oroot-key\"
-            rm -r \"/run/oroot-key\"
-         fi
+           if [ \"\$oroot\" = \"live\" ]; then
+              umount \"/run/oroot-key\"
+              rm -r \"/run/oroot-key\"
+           fi
 EOF
         ;;
       cryptdevice*UUID*)
         cat <<EOF >> oroot
-         if [ \"\$oroot\" = \"live\" ]; then
-            cryptsetup close \"${a#cryptdevice=UUID=*:}\"
-         fi
+           if [ \"\$oroot\" = \"live\" ]; then
+              cryptsetup close \"${a#cryptdevice=UUID=*:}\"
+           fi
 EOF
         ;;
       cryptdevice*)
         cat <<EOF >> oroot
-         if [ \"\$oroot\" = \"live\" ]; then
-            cryptsetup close \"${a#cryptdevice=*:}\"
-         fi
+           if [ \"\$oroot\" = \"live\" ]; then
+              cryptsetup close \"${a#cryptdevice=*:}\"
+           fi
 EOF
         ;;
     esac
