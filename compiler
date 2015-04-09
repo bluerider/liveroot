@@ -25,7 +25,7 @@ genOverlayFlush() {
         crypt_root="${a#cryptdevice=UUID=}"
         cat <<EOF >> oroot
            if [ \"\$oroot\" = \"live\" ]; then
-              cryptsetup open --uuid=\"${crypt_root%:*}\" \"${crypt_root#*:}\" \\
+              cryptsetup open \"/dev/disk/by-uuid/${crypt_root%:*}\" \"${crypt_root#*:}\" \\
 EOF
         ;;
       cryptdevice)
