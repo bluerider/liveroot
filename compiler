@@ -130,11 +130,35 @@ EOF
 # interpret kernel cmdline options and pass to above loop
 closeOverlayFlush </proc/cmdline
 
-# setuid for overlay_flush and mount root
+# setuid for overlay_flush
 cat <<EOF >> oroot
          " > /overlay_flush
      chmod ug+x /overlay_flush
-     poll_device "\$root" 20;
+EOF
+
+# check to see if root device is up
+checkRootDev() {
+  read b
+  for a in $b; do
+    case "$a" in
+      root*UUID*)
+        cat <<EOF >> oroot
+     poll_device \"/dev/disk/by-uuid/${a#root=UUID=}\" 20
+EOF
+        ;;
+      root*)
+        cat <<EOF >> oroot
+     poll_device \"${a#root=}\" 20
+EOF
+        ;;
+    esac
+  done;
+  unset b
+}
+
+checkRootDev </proc/cmdline
+
+cat <<EOF >> oroot
      "\$mount_handler" /lroot;
 EOF
 
