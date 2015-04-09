@@ -1,5 +1,44 @@
 #!/bin/bash
 
+# build the oroot install hook
+cat <<EOF > oroot_install
+#!/bin/ash
+
+build() {
+  add_dir /lroot
+  add_dir /troot
+  add_binary zramctl
+  add_binary mkswap
+  add_binary swapon
+  add_binary free
+EOF
+
+# check which binary to add to oroot install hook
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot_install
+  add_binary mkfs.btrfs
+  add_binary btrfs
+EOF
+ else
+   cat <<EOF >> oroot_install
+  add_binary mkfs.ext2
+EOF
+fi
+
+# finish writing the oroot install hook
+cat <<EOF >>oroot_install
+  add_binary nproc
+  add_runscript
+}
+
+help() {
+  cat <<HELPEOF
+This hoook overlays a tmpfs on top of root removing persistent writes to root
+HELPEOF
+}
+EOF
+
+
 # output header for oroot hook + overlay_flush header
 cat <<EOF > oroot
 #!/bin/ash
