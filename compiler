@@ -85,12 +85,44 @@ EOF
 # interpret kernel cmdline options and pass to above loop
 genOverlayFlush </proc/cmdline
 
-# rsync code + clean up code for overlay_flush
+# use mount options
 cat <<EOF >> oroot
              -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
-           rsync -a --delete / /run/oroot --exclude bin --exclude boot --exclude dev \\
+EOF
+
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot
+           if [ \"\$oroot\" = \"live\" ]; then
+              btrfs subvolume snapshot -r / /oroot-snapshot
+              cd /oroot/snap/
+            else
+              cd /
+           fi
+EOF
+ else
+   cat <<EOF >> oroot
+           cd /
+EOF
+fi
+
+# rsync code
+cat <<EOF >> oroot
+           rsync -a --delete * /run/oroot --exclude bin --exclude boot --exclude dev \\
              --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
              --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
+EOF
+
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot
+           btrfs subvolume snapshot -r \"/run/oroot\" \"/run/oroot/snapshots/\\\$(date +%s)\"
+           if [ \"\$oroot\" = \"live\" ]; then
+              btrfs subvolume delete /oroot-snap
+           fi
+EOF
+fi
+
+# unmount and remove drive
+cat <<EOF >> oroot
            umount /run/oroot;
            rm -r /run/oroot;
 EOF
@@ -165,11 +197,44 @@ cat <<EOF >> oroot
      case "\$oroot" in
         live|compressed)
           zdevice=\$(zramctl -f -s \$(free -m | awk '/Mem/ {print int(\$2*2)"M"}') -a lzo -t \$(nproc))
+EOF
+
+#  generate either btrfs or ext2 device
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot
+          mkfs.btrfs "\$zdevice"
+EOF
+ else
+   cat <<EOF >> oroot
           mkfs.ext2 -q "\$zdevice"
+EOF
+fi
+
+# mount zdevice
+cat <<EOF >> oroot
           mount "\$zdevice" /troot
           export zdevice
           if [ "\$oroot" = "live" ]; then
+EOF
+
+# if using btrfs + oroot=live; load most recent snapshot
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot
+             root_snap=\$(ls /lroot/snapshots | sort -nr | head -1)
+             btrfs send "/lroot/snapshots/\$root_snap" | \\
+                btrfs receive /troot
+             btrfs subvolume snapshot "/troot/\$root_snap" \\
+                "/troot/\${root_snap}_root"
+             export root_snap
+EOF
+ else
+   cat <<EOF >> oroot
              cp -a /lroot/* /troot/
+EOF
+fi
+
+# unmount /troot when using oroot=live
+cat <<EOF >> oroot
              umount /troot
 EOF
 
@@ -196,9 +261,21 @@ EOF
 closeDevice </proc/cmdline
 
 # finish setting up ram device
-cat <<EOF >>oroot
+cat <<EOF >> oroot
              oroot_mount() {
+EOF
+
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot
+               mount -o subvol="\${root_snap}_root" "\$zdevice" "\$1"
+EOF
+ else
+   cat <<EOF >> oroot
                mount "\$zdevice" "\$1"
+EOF
+fi
+
+cat <<EOF >> oroot
                mv /overlay_flush /\$1/usr/bin/
              }
            else
