@@ -19,21 +19,18 @@ if [ "$1" = "btrfs" ]; then
   add_binary mkfs.btrfs
   add_binary btrfs
 EOF
- else
-   cat <<EOF >> oroot_install
-  add_binary mkfs.ext2
-EOF
 fi
 
 # finish writing the oroot install hook
 cat <<EOF >>oroot_install
+  add_binary mkfs.ext2
   add_binary nproc
   add_runscript
 }
 
 help() {
   cat <<HELPEOF
-This hoook overlays a tmpfs on top of root removing persistent writes to root
+This hook overlays a tmpfs on top of root removing persistent writes to root
 HELPEOF
 }
 EOF
@@ -231,10 +228,18 @@ EOF
 
 checkRootDev </proc/cmdline
 
+if [ "$1" = "btrfs" ]; then
+   cat <<EOF >> oroot
+     root_snap=\$(ls /lroot/snapshots | sort -nr | head -1)
+     export root_snap
+EOF
+fi
+
+
 # read $oroot and generate ram device
 cat <<EOF >> oroot
      case "\$oroot" in
-        live|compressed)
+        live)
           zdevice=\$(zramctl -f -s \$(free -m | awk '/Mem/ {print int(\$2*2)"M"}') -a lzo -t \$(nproc))
 EOF
 
@@ -253,29 +258,26 @@ fi
 cat <<EOF >> oroot
           mount "\$zdevice" /troot
           export zdevice
-          if [ "\$oroot" = "live" ]; then
 EOF
 
 # if using btrfs + oroot=live; load most recent snapshot
 if [ "$1" = "btrfs" ]; then
    cat <<EOF >> oroot
-             root_snap=\$(ls /lroot/snapshots | sort -nr | head -1)
-             btrfs send "/lroot/snapshots/\$root_snap" | \\
-                btrfs receive /troot
-             btrfs subvolume snapshot "/troot/\$root_snap" \\
-                "/troot/\${root_snap}_root"
-             export root_snap
+          btrfs send "/lroot/snapshots/\$root_snap" | \\
+            btrfs receive /troot
+          btrfs subvolume snapshot "/troot/\$root_snap" \\
+            "/troot/\${root_snap}_root"
 EOF
  else
    cat <<EOF >> oroot
-             cp -a /lroot/* /troot/
+          cp -a /lroot/* /troot/
 EOF
 fi
 
 # unmount /troot when using oroot=live
 cat <<EOF >> oroot
-             umount /troot
-             umount /lroot
+          umount /troot
+          umount /lroot
 EOF
 
 # close device if oroot=live
@@ -285,12 +287,12 @@ closeDevice() {
     case "$a" in
       cryptdevice*UUID*)
         cat <<EOF >> oroot
-             cryptsetup close "${a#cryptdevice=UUID=*:}"
+          cryptsetup close "${a#cryptdevice=UUID=*:}"
 EOF
         ;;
       cryptdevice*)
         cat <<EOF >> oroot
-             cryptsetup close "${a#cryptdevice=*:}"
+          cryptsetup close "${a#cryptdevice=*:}"
 EOF
         ;;
     esac
@@ -302,36 +304,43 @@ closeDevice </proc/cmdline
 
 # finish setting up ram device
 cat <<EOF >> oroot
-             oroot_mount() {
+          oroot_mount() {
 EOF
 
 if [ "$1" = "btrfs" ]; then
    cat <<EOF >> oroot
-               mount -o subvol="\${root_snap}_root" "\$zdevice" "\$1"
+            mount -o subvol="\${root_snap}_root" "\$zdevice" "\$1"
 EOF
  else
    cat <<EOF >> oroot
-               mount "\$zdevice" "\$1"
+            mount "\$zdevice" "\$1"
 EOF
 fi
 
+
 cat <<EOF >> oroot
-               mv /overlay_flush /\$1/usr/bin/
-             }
-           else
-             mkdir /troot/upper /troot/work
-             oroot_mount() {
-               mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
-               mv /overlay_flush /\$1/usr/bin/
-             }
-          fi
+            mv /overlay_flush \$1/usr/bin/
+          }
+          ;;
+        compressed)
+          zdevice=\$(zramctl -f -s \$(free -m | awk '/Mem/ {print int(\$2*2)"M"}') -a lzo -t \$(nproc))
+          mkfs.ext2 -q "\$zdevice"
+          mount "\$zdevice" "/troot"
+          mkdir /troot/upper /troot/work
+          oroot_mount() {
+EOF
+
+cat <<EOF >> oroot
+            mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
+            mv /overlay_flush \$1/usr/bin/
+          }
           ;;
         *)
           mount troot -t tmpfs -o size=\$(free -m | awk '/Mem/ {print int(\$2)"M"}') /troot
           mkdir /troot/upper /troot/work
           oroot_mount() {
             mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
-            mv /overlay_flush /\$1/usr/bin/
+            mv /overlay_flush \$1/usr/bin/
           }
           ;;
      esac
