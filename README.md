@@ -11,10 +11,10 @@ Liveroot has 3 modes of operation that can be triggered by adding to the kernel 
 
 You will want to move these files to the appropriate directory:
 
-In Repo                     On Root
----------                   ----------
-initcpio/hooks/oroot        /usr/lib/initcpio/hooks/oroot
-initcpio/install/oroot      /usr/lib/initcpio/install/oroot
+In Repo                 |   On Root
+------------------------|------------------------------------
+initcpio/hooks/oroot    |    /usr/lib/initcpio/hooks/oroot
+initcpio/install/oroot  |    /usr/lib/initcpio/install/oroot
 
 Add oroot to the hooks array of /etc/mkinitcpio.conf (after udev and possibly encrypt) and run # mkinitcpio -p linux to run oroot at boot.
 
@@ -28,8 +28,7 @@ This will generate two files : oroot
                              : oroot_install
 You will want to move these files to the appropriate directory :
 
-In Repo                     On Root
----------                   ----------
-oroot                       /usr/lib/initcpio/hooks/oroot
-oroot_install               /usr/lib/initcpio/install/oroot
-initcpio/hooks/oroot        /usr/lib/initcpio/hooks/oroot
+In Repo                 |   On Root
+------------------------|------------------------------------
+oroot                   |    /usr/lib/initcpio/hooks/oroot
+oroot_install           |    /usr/lib/initcpio/install/oroot
