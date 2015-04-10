@@ -144,8 +144,8 @@ fi
 # rsync code
 cat <<EOF >> oroot
            rsync -a --delete * /run/oroot --exclude bin --exclude boot --exclude dev \\
-             --exclude lib --exclude lib64 --exclude mnt --exclude proc --exclude run \\
-             --exclude sbin --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
+             --exclude mnt --exclude proc --exclude run \\
+             --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
 EOF
 
 if [ "$1" = "btrfs" ]; then
