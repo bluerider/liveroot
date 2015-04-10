@@ -5,9 +5,11 @@ Tired of the slow I/O when running Linux on a USB OS?
 Liveroot greatly speeds up USB based Linux by writing to ram instead of to the USB. Flushing the ram to the USB stick can be controlled by the user by calling /usr/bin/overlay_flush.
 
 Liveroot has 3 modes of operation that can be triggered by adding to the kernel cmdline:
-  1) oroot=raw        : use a tmpfs overlay
-  2) oroot=compressed : use a lzo compressed zram overlay
-  3) oroot=live       : load root into a lzo compressed ram overlay (need as much ram as root drive size)
+   Option           | Use
+   -----------------|--------------------------------------------
+   oroot=raw        | use a tmpfs overlay
+   oroot=compressed | use a lzo compressed zram overlay
+   oroot=live       | load root into a lzo compressed ram overlay
 
 You will want to move these files to the appropriate directory:
 
@@ -24,8 +26,8 @@ To use the compiler :
    ./compiler
  or
    ./compiler btrfs
-This will generate two files : oroot
-                             : oroot_install
+This will generate two files: oroot, oroot_install
+
 You will want to move these files to the appropriate directory :
 
 In Repo                 |   On Root
