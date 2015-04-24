@@ -365,7 +365,9 @@ cat <<EOF >> oroot
           mkdir /troot/upper /troot/work
           oroot_mount() {
             mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
-            pacman -U "\$1/var/cache/pacman/pkg/"* --noconfirm -r "\$1"
+            cd "\$1"
+            pacman --noconfirm -r "\$1" -U "var/cache/pacman/pkg/"* \\
+              --config /dev/null
             mv /overlay_flush \$1/usr/bin/
           }
           ;;          
