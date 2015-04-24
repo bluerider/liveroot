@@ -25,6 +25,7 @@ fi
 cat <<EOF >>oroot_install
   add_binary mkfs.ext2
   add_binary nproc
+  add_binary pacman
   add_runscript
 }
 
@@ -47,6 +48,21 @@ run_hook() {
      if [ ! -b "/dev/zram0" ]; then
         modprobe zram num_devices=\$((\$(nproc)+2))
      fi
+EOF
+
+# figure out where to sync to
+cat <<EOF >>oroot
+     oroot_syncdir() {
+       if [ \"\$oroot\" = \"package\" ]; then
+          echo /run/oroot/home
+        else
+          echo /run/oroot
+       fi
+     }
+EOF
+
+## start the overlay_flush script
+cat <<EOF >> oroot
      echo "#!/bin/bash
            mkdir /run/oroot
 EOF
@@ -131,19 +147,25 @@ if [ "$1" = "btrfs" ]; then
            if [ \"\$oroot\" = \"live\" ]; then
               btrfs subvolume snapshot / /oroot-snap
               cd /oroot-snap
+            elif [ \"\$oroot\" = \"package\" ]; then
+              cd /home
             else
               cd /
            fi
 EOF
  else
    cat <<EOF >> oroot
-           cd /
+           if [ \"\$oroot\" = \"package\" ]; then
+             cd /home
+            else
+             cd /
+           fi
 EOF
 fi
 
 # rsync code
 cat <<EOF >> oroot
-           rsync -ax --delete --no-whole-file --inplace \\\$PWD/ /run/oroot \\
+           rsync -ax --delete --no-whole-file --inplace \\\$PWD/ \$(oroot_syncdir) \\
              --exclude boot --exclude dev \\
              --exclude mnt --exclude proc --exclude run \\
              --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
@@ -201,7 +223,7 @@ closeOverlayFlush </proc/cmdline
 
 # setuid for overlay_flush
 cat <<EOF >> oroot
-         " > /overlay_flush
+          " > /overlay_flush
      chmod ug+x /overlay_flush
 EOF
 
@@ -329,13 +351,24 @@ cat <<EOF >> oroot
           mount "\$zdevice" "/troot"
           mkdir /troot/upper /troot/work
           oroot_mount() {
-EOF
-
-cat <<EOF >> oroot
             mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
             mv /overlay_flush \$1/usr/bin/
           }
           ;;
+EOF
+
+cat <<EOF >> oroot
+        package)
+          zdevice=\$(zramctl -f -s \$(free -m | awk '/Mem/ {print int(\$2*2)"M"}') -a lzo -t \$(nproc))
+          mkfs.ext2 -q "\$zdevice"
+          mount "\$zdevice" "/troot"
+          mkdir /troot/upper /troot/work
+          oroot_mount() {
+            mount oroot -t overlay -o lowerdir=/lroot,upperdir=/troot/upper,workdir=/troot/work "\$1"
+            pacman -U "\$1/var/cache/pacman/pkg/"* --noconfirm
+            mv /overlay_flush \$1/usr/bin/
+          }
+          ;;          
         *)
           mount troot -t tmpfs -o size=\$(free -m | awk '/Mem/ {print int(\$2)"M"}') /troot
           mkdir /troot/upper /troot/work
