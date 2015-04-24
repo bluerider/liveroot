@@ -53,7 +53,7 @@ EOF
 # figure out where to sync to
 cat <<EOF >>oroot
      oroot_syncdir() {
-       if [ \"\$oroot\" = \"package\" ]; then
+       if [ \"\$oroot\" = \"packages\" ]; then
           echo /run/oroot/home
         else
           echo /run/oroot
@@ -147,7 +147,7 @@ if [ "$1" = "btrfs" ]; then
            if [ \"\$oroot\" = \"live\" ]; then
               btrfs subvolume snapshot / /oroot-snap
               cd /oroot-snap
-            elif [ \"\$oroot\" = \"package\" ]; then
+            elif [ \"\$oroot\" = \"packages\" ]; then
               cd /home
             else
               cd /
@@ -155,7 +155,7 @@ if [ "$1" = "btrfs" ]; then
 EOF
  else
    cat <<EOF >> oroot
-           if [ \"\$oroot\" = \"package\" ]; then
+           if [ \"\$oroot\" = \"packages\" ]; then
              cd /home
             else
              cd /
@@ -358,7 +358,7 @@ cat <<EOF >> oroot
 EOF
 
 cat <<EOF >> oroot
-        package)
+        packages)
           zdevice=\$(zramctl -f -s \$(free -m | awk '/Mem/ {print int(\$2*2)"M"}') -a lzo -t \$(nproc))
           mkfs.ext2 -q "\$zdevice"
           mount "\$zdevice" "/troot"
