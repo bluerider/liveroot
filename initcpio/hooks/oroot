@@ -2,11 +2,8 @@
 
 run_hook() {
   if [ "${oroot}" ]; then
-     if [ "$(echo $root | grep UUID)" ]; then
-        rootdev=$(resolve_device "$root")
-        root=$rootdev
-        unset rootdev
-     fi;
+     root=$(resolve_device "${root}")
+
      fsck_root() {
        echo &>/dev/null
      }
