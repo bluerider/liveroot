@@ -161,7 +161,7 @@ fi
 # unmount and remove drive
 cat <<EOF >> oroot
            umount /run/oroot &&
-           rm -r /run/oroot &&
+           rmdir /run/oroot &&
 EOF
 
 # close the device in overlay_flush
@@ -173,7 +173,7 @@ closeOverlayFlush() {
         cat <<EOF >> oroot
            if [ \"\$oroot\" = \"live\" ]; then
               umount \"/run/oroot-key\"
-              rm -r \"/run/oroot-key\"
+              rmdir \"/run/oroot-key\"
            fi
 EOF
         ;;
