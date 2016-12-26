@@ -1,5 +1,6 @@
 #!/bin/ash
-
+set -e
+set -x
 run_hook() {
   if [ "${oroot}" ]; then
      root=$(resolve_device "${root}")
@@ -20,7 +21,7 @@ run_hook() {
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               rsync -ax --no-whole-file --inplace --delete / /run/oroot --exclude boot --exclude dev --exclude mnt --exclude proc --exclude run --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
               umount /run/oroot &&
-              rm -r /run/oroot &&
+              rmdir /run/oroot &&
               cryptsetup close \"$root\";
               " > /overlay_flush;
        elif [[ "${cryptdevice}" && "${oroot}" = "live" && ! -f "/hooks/lvm2" ]]; then
@@ -30,7 +31,7 @@ run_hook() {
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               rsync -ax --no-whole-file --inplace --delete / /run/oroot --exclude boot --exclude dev --exclude mnt --exclude proc --exclude run --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
               umount /run/oroot &&
-              rm -r /run/oroot &&
+              rmdir /run/oroot &&
               cryptsetup close \"$root\";
               " > /overlay_flush;
        else
@@ -39,7 +40,7 @@ run_hook() {
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               rsync -ax --no-whole-file --inplace --delete / /run/oroot --exclude boot --exclude dev --exclude mnt --exclude proc --exclude run --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
               umount /run/oroot &&
-              rm -r /run/oroot &&
+              rmdir /run/oroot &&
               " > /overlay_flush;
      fi;
      chmod ug+x /overlay_flush
