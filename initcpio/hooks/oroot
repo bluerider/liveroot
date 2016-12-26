@@ -1,6 +1,4 @@
 #!/bin/ash
-set -e
-set -x
 run_hook() {
   if [ "${oroot}" ]; then
      root=$(resolve_device "${root}")
