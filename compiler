@@ -161,7 +161,7 @@ fi
 # unmount and remove drive
 cat <<EOF >> oroot
            umount /run/oroot &&
-           rmdir /run/oroot &&
+           rmdir /run/oroot
 EOF
 
 # close the device in overlay_flush
