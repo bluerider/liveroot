@@ -271,7 +271,7 @@ if [ "$1" = "btrfs" ]; then
 EOF
  else
    cat <<EOF >> oroot
-          cp -a /lroot/* /troot/
+          cp -rTa /lroot/* /troot/
 EOF
 fi
 
