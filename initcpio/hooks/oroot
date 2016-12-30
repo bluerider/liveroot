@@ -1,4 +1,5 @@
 #!/bin/ash
+
 run_hook() {
   if [ "${oroot}" ]; then
      root=$(resolve_device "${root}")
@@ -61,7 +62,7 @@ run_hook() {
      fi;
      unset mem_size;
      if [ "${oroot}" = "live" ]; then
-        cp -a /lroot/* /troot/;
+        cp -rTa /lroot/* /troot/;
         umount /lroot;
         umount /troot;
         export oroot_device;
