@@ -123,7 +123,7 @@ genOverlayFlush </proc/cmdline
 
 # use mount options
 cat <<EOF >> oroot
-             -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
+             mount -o $(awk '{if ($2 == "/") {print $4}}' /etc/fstab) \"/run/oroot\"
 EOF
 
 if [ "$1" = "btrfs" ]; then
