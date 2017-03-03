@@ -1,7 +1,9 @@
 #!/bin/bash
-if [ "$1" = "--help" ]; then
-    echo "./compiler [btrfs]"
-    echo "    btrfs: enable btrfs specific functionality"
+if [ "$1" = "--help" ] || ! ( [ "$#" -le 1 ] && ( [ "$1" = "btrfs" ] || [ -z "$1" ] ) ); then
+    echo "./compiler [btrfs|--help]"
+    echo "    btrfs:  enable btrfs specific functionality"
+    echo "    --help: print this help"
+    exit 1
 fi
 # build the oroot install hook
 cat <<EOF > oroot_install
