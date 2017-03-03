@@ -53,8 +53,7 @@ run_hook() {
         modprobe zram num_devices=\$((\$(nproc)+2))
      fi
      echo "#!/bin/bash
-           set -e
-           if [ \"\$1\" = \"--debug\" ] || [ \"\$1\" = \"-d\" ]
+           if [ "$1" = "--debug" ] || [ "$1" = "-d" ]
            then
              set -x
            fi
