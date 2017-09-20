@@ -1,4 +1,4 @@
-#!/bin/ash
+#!/bin/bash
 
 run_hook() {
   if [ "${oroot}" ]; then
