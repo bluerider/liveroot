@@ -2,7 +2,7 @@
 
 # build the oroot install hook
 cat <<EOF > oroot_install
-#!/bin/ash
+#!/bin/bash
 
 build() {
   add_dir /lroot
@@ -38,7 +38,7 @@ EOF
 
 # output header for oroot hook + overlay_flush header
 cat <<EOF > oroot
-#!/bin/ash
+#!/bin/bash
 run_hook() {
   if [ "\${oroot}" ]; then
      fsck_root() {
@@ -90,7 +90,7 @@ EOF
         # need to newline before fi for cryptsetup to break \
         if [ "$crypt_root" ]; then
         cat <<EOF >> oroot
-        
+
            fi
            mount -U \"${a#root=UUID=}\" \\
 EOF
@@ -103,12 +103,12 @@ EOF
       root*)
         if [ "$crypt_root" ]; then
         cat <<EOF >> oroot
-        
+
            fi
            mount --source \"${a#root=}\" \\
 EOF
          else
-        cat <<EOF >> oroot        
+        cat <<EOF >> oroot
            mount --source \"${a#root=}\" \\
 EOF
         fi
