@@ -39,8 +39,7 @@ run_hook() {
               mount -o \$(awk '{if (\$2 == \"/\") {print \$4}}' /etc/fstab) \"$root\" /run/oroot || mount \"$root\" /run/oroot;
               rsync -ax --no-whole-file --inplace --delete / /run/oroot --exclude boot --exclude dev --exclude mnt --exclude proc --exclude run --exclude sys --exclude tmp --exclude usr/bin/overlay_flush;
               umount /run/oroot &&
-              rm -r /run/oroot &&
-              " > /overlay_flush;
+              rm -r /run/oroot" > /overlay_flush;
      fi;
      chmod ug+x /overlay_flush
      poll_device "$root" 20;
